@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="'Exchange Rates for ' + ${currencyName}"></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+      text-align: center;
+    }
+
+    input[type="date"] {
+      padding: 5px;
+      margin: 0 10px;
+    }
+
+    button {
+      padding: 5px 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    a {
+      display: block;
+      width: 200px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    a:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+<h1 th:text="'Exchange Rates for ' + ${currencyName}"></h1>
+
+<form th:action="@{/currency/details}" method="get">
+  <input type="hidden" name="name" th:value="${currencyName}"/>
+  Start Date: <input type="date" name="startDate">
+  End Date: <input type="date" name="endDate">
+  <button type="submit">Filter</button>
+</form>
+
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Previous Rate</th>
+    <th>Rate Change</th>
+    <th>Current Rate</th>
+  </tr>
+  <tr th:each="rate : ${rates}">
+    <td th:text="${rate.date}"></td>
+    <td th:text="${rate.previousRate}"></td>
+    <td th:text="${rate.rateChange}"></td>
+    <td th:text="${#numbers.formatDecimal(rate.exchangeRate, 0, 2)}"></td>
+  </tr>
+</table>
+
+<a th:href="@{/}">Back to Home</a>
+</body>
+</html>

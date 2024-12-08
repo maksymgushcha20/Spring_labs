@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Currency Change</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h1>Add Currency Change</h1>
+<form th:action="@{/admin/addChange}" method="post">
+    <label for="currencyName">Currency Name:</label>
+    <input type="text" id="currencyName" name="currencyName" placeholder="Enter currency name (e.g., USD)" required/>
+
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required/>
+
+    <label for="rateChange">Rate Change:</label>
+    <input type="number" id="rateChange" step="0.01" name="rateChange" placeholder="Enter rate change (e.g., +2 or -1.5)" required/>
+
+    <button type="submit">Add Rate Change</button>
+</form>
+
+<a th:href="@{/admin}" class="back-link">Back to Admin Panel</a>
+</body>
+</html>

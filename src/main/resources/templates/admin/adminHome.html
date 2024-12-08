@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 16px;
+            color: white;
+            text-decoration: none;
+            background-color: #007BFF;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .button-danger {
+            background-color: #dc3545;
+        }
+
+        .button-danger:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+<h1>Admin Panel</h1>
+
+<div class="button-container">
+    <a th:href="@{/admin/addInitial}" class="button">Add Initial Currency</a>
+    <a th:href="@{/admin/addChange}" class="button">Add Currency Change</a>
+    <a th:href="@{/admin/editName}" class="button">Edit Currency Name</a>
+    <a th:href="@{/admin/delete}" class="button button-danger">Delete Currency</a>
+</div>
+</body>
+</html>
