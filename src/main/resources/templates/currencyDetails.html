@@ -14,30 +14,6 @@
       color: #333;
     }
 
-    form {
-      max-width: 600px;
-      margin: 0 auto 20px auto;
-      text-align: center;
-    }
-
-    input[type="date"] {
-      padding: 5px;
-      margin: 0 10px;
-    }
-
-    button {
-      padding: 5px 10px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 3px;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
     table {
       width: 80%;
       margin: 20px auto;
@@ -61,6 +37,16 @@
       background-color: #f9f9f9;
     }
 
+    .positive {
+      color: green;
+      font-weight: bold;
+    }
+
+    .negative {
+      color: red;
+      font-weight: bold;
+    }
+
     a {
       display: block;
       width: 200px;
@@ -81,25 +67,25 @@
 <body>
 <h1 th:text="'Exchange Rates for ' + ${currencyName}"></h1>
 
-<form th:action="@{/currency/details}" method="get">
-  <input type="hidden" name="name" th:value="${currencyName}"/>
-  Start Date: <input type="date" name="startDate">
-  End Date: <input type="date" name="endDate">
-  <button type="submit">Filter</button>
-</form>
-
 <table>
   <tr>
     <th>Date</th>
     <th>Previous Rate</th>
     <th>Rate Change</th>
     <th>Current Rate</th>
+    <th>Status</th>
   </tr>
   <tr th:each="rate : ${rates}">
     <td th:text="${rate.date}"></td>
-    <td th:text="${rate.previousRate}"></td>
+    <td th:text="${#numbers.formatDecimal(rate.previousRate, 0, 2)}"></td>
     <td th:text="${rate.rateChange}"></td>
     <td th:text="${#numbers.formatDecimal(rate.exchangeRate, 0, 2)}"></td>
+
+    <!-- Умовне форматування для статусу -->
+    <td th:class="${rate.rateChange > 0} ? 'positive' : 'negative'">
+      <span th:if="${rate.rateChange > 0}" th:text="'Increase'"></span>
+      <span th:unless="${rate.rateChange > 0}" th:text="'Decrease'"></span>
+    </td>
   </tr>
 </table>
 
