@@ -82,9 +82,12 @@
     <td th:text="${#numbers.formatDecimal(rate.exchangeRate, 0, 2)}"></td>
 
     <!-- Умовне форматування для статусу -->
-    <td th:class="${rate.rateChange > 0} ? 'positive' : 'negative'">
-      <span th:if="${rate.rateChange > 0}" th:text="'Increase'"></span>
-      <span th:unless="${rate.rateChange > 0}" th:text="'Decrease'"></span>
+    <td th:switch="${rate.rateChange}">
+      <span th:case="0" th:text="'No Change'"></span>
+      <span th:case="*">
+                <span th:if="${rate.rateChange > 0}" class="positive" th:text="'Increase'"></span>
+                <span th:unless="${rate.rateChange > 0}" class="negative" th:text="'Decrease'"></span>
+            </span>
     </td>
   </tr>
 </table>
