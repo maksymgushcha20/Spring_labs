@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,4 +63,31 @@ public class CurrencyService {
     public void deleteCurrencyByName(String currencyName) {
         currencyRepository.deleteByCurrencyName(currencyName);
     }
+
+    // ======= Додані методи для REST API =======
+
+    public List<CurrencyRate> getAllCurrencies(int page, int size) {
+        return currencyRepository.getCurrencies(page, size);
+    }
+
+    public Optional<CurrencyRate> getCurrencyByName(String name) {
+        return currencyRepository.findByName(name);
+    }
+
+    public CurrencyRate addCurrency(CurrencyRate currencyRate) {
+        currencyRepository.save(currencyRate);
+        return currencyRate;
+    }
+
+    public Optional<CurrencyRate> updateCurrency(String name, CurrencyRate updatedRate) {
+        return currencyRepository.update(name, updatedRate);
+    }
+
+    public boolean deleteCurrency(String name) {
+        if (currencyRepository.currencyExists(name)) {
+            return currencyRepository.delete(name);
+        }
+        return false;
+    }
+
 }
