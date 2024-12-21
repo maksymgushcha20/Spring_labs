@@ -67,16 +67,22 @@ public class CurrencyService {
 
 
     @Transactional
-    public Optional<CurrencyRate> updateCurrency(Long id, CurrencyRate updatedRate) {
-        return repository.findById(id).map(existingRate -> {
-            existingRate.setCurrencyName(updatedRate.getCurrencyName());
-            existingRate.setDate(updatedRate.getDate());
-            existingRate.setExchangeRate(updatedRate.getExchangeRate());
-            existingRate.setPreviousRate(updatedRate.getPreviousRate());
-            existingRate.setRateChange(updatedRate.getRateChange());
-            return repository.save(existingRate);
-        });
+    public Optional<CurrencyRate> updateCurrency(String id, CurrencyRate updatedRate) {
+        List<CurrencyRate> currencyRates = repository.findByCurrencyName(id);
+        if (currencyRates.isEmpty()) {
+            return Optional.empty();
+        }
+
+        CurrencyRate existingRate = currencyRates.get(0);
+        existingRate.setCurrencyName(updatedRate.getCurrencyName());
+        existingRate.setDate(updatedRate.getDate());
+        existingRate.setExchangeRate(updatedRate.getExchangeRate());
+        existingRate.setPreviousRate(updatedRate.getPreviousRate());
+        existingRate.setRateChange(updatedRate.getRateChange());
+
+        return Optional.of(repository.save(existingRate));
     }
+
 
     @Transactional
     public List<String> getAllCurrencyNames() {

@@ -86,7 +86,7 @@ public class CurrencyRestController {
     @PutMapping("/{id}")
     public ResponseEntity<CurrencyRate> updateCurrency(
             @Parameter(description = "ID валюти, яку потрібно оновити", required = true)
-            @PathVariable Long id,
+            @PathVariable String id,
             @Parameter(description = "Оновлені дані валюти", required = true)
             @RequestBody CurrencyRate updatedRate) {
         return currencyService.updateCurrency(id, updatedRate)
