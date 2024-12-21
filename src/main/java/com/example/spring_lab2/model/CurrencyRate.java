@@ -1,13 +1,35 @@
 package com.example.spring_lab2.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "currency_rates")
 public class CurrencyRate {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "currency_name", nullable = false)
     private String currencyName;
+
+    @Column(name = "rate_date", nullable = false)
     private LocalDate date;
+
+    @Column(name = "exchange_rate", nullable = false)
     private double exchangeRate;
+
+    @Column(name = "previous_rate")
     private double previousRate;
+
+    @Column(name = "rate_change")
     private double rateChange;
+
+
+    public CurrencyRate() {
+    }
+
 
     public CurrencyRate(String currencyName, LocalDate date, double exchangeRate, double previousRate, double rateChange) {
         this.currencyName = currencyName;
@@ -15,6 +37,14 @@ public class CurrencyRate {
         this.exchangeRate = exchangeRate;
         this.previousRate = previousRate;
         this.rateChange = rateChange;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getCurrencyName() {
