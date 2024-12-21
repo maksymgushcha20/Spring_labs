@@ -83,16 +83,17 @@ public class CurrencyRestController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CurrencyRate.class))),
             @ApiResponse(responseCode = "404", description = "Валюта не знайдена")
     })
-    @PutMapping("/{name}")
+    @PutMapping("/{id}")
     public ResponseEntity<CurrencyRate> updateCurrency(
-            @Parameter(description = "Назва валюти, яку потрібно оновити", required = true)
-            @PathVariable String name,
+            @Parameter(description = "ID валюти, яку потрібно оновити", required = true)
+            @PathVariable Long id,
             @Parameter(description = "Оновлені дані валюти", required = true)
             @RequestBody CurrencyRate updatedRate) {
-        return currencyService.updateCurrency(name, updatedRate)
+        return currencyService.updateCurrency(id, updatedRate)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
 
     @Operation(
             summary = "Видалити валюту за ім'ям",
@@ -106,9 +107,10 @@ public class CurrencyRestController {
     public ResponseEntity<Void> deleteCurrency(
             @Parameter(description = "Назва валюти для видалення", required = true)
             @PathVariable String name) {
-        if (currencyService.deleteCurrency(name)) {
+        if (currencyService.deleteCurrencyByName(name)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
+
 }
