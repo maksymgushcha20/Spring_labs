@@ -61,6 +61,21 @@ public class CurrencyService {
     }
 
     @Transactional
+    public boolean updateOrAddRate(Currency currency, LocalDate date, double initialRate) {
+        Optional<CurrencyRate> rateOpt = currencyRateRepository.findByCurrencyAndDate(currency, date);
+        if (rateOpt.isPresent()) {
+            CurrencyRate rate = rateOpt.get();
+            rate.setExchangeRate(initialRate);
+            currencyRateRepository.save(rate);
+            return true;
+        } else {
+            CurrencyRate newRate = new CurrencyRate(currency, date, initialRate);
+            currencyRateRepository.save(newRate);
+            return true;
+        }
+    }
+
+    @Transactional
     public boolean deleteCurrencyByName(String name) {
         Optional<Currency> currencyOpt = currencyRepository.findByCurrencyName(name);
         if (currencyOpt.isPresent()) {
@@ -76,6 +91,11 @@ public class CurrencyService {
             .orElseThrow(() -> new IllegalArgumentException("Currency not found"));
         CurrencyRate currencyRate = new CurrencyRate(currency, date, exchangeRate);
         return currencyRateRepository.save(currencyRate);
+    }
+
+    @Transactional
+    public Optional<Currency> findById(Long id) {
+        return currencyRepository.findById(id);
     }
 
     @Transactional

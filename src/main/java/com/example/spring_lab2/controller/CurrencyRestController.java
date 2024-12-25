@@ -1,5 +1,6 @@
 package com.example.spring_lab2.controller;
 
+import com.example.spring_lab2.dto.CurrencyUpdateDTO;
 import com.example.spring_lab2.model.Currency;
 import com.example.spring_lab2.service.CurrencyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -96,36 +97,33 @@ public class CurrencyRestController {
         }
     }
 
+    @PutMapping
     @Operation(
-            summary = "Оновити валюту",
-            description = "Оновлює інформацію про валюту на основі її ID."
+        summary = "Оновити інформацію про валюту",
+        description = "Оновлює дані валюти за назвою. Якщо дата існує, оновлює запис, інакше додає новий. Якщо ім'я валюти не існує, повертає помилку."
     )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Валюта успішно оновлена",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Currency.class))),
-            @ApiResponse(responseCode = "404", description = "Валюта не знайдена",
-                    content = @Content),
-            @ApiResponse(responseCode = "500", description = "Внутрішня помилка сервера",
-                    content = @Content)
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Успішно оновлено"),
+        @ApiResponse(responseCode = "400", description = "Некоректні дані запиту"),
+        @ApiResponse(responseCode = "404", description = "Валюта не знайдена")
     })
-    @PutMapping("/{id}")
     public ResponseEntity<?> updateCurrency(
-            @Parameter(description = "ID валюти, яку потрібно оновити", required = true, example = "1")
-            @PathVariable Long id,
-            @Parameter(description = "Оновлені дані валюти", required = true,
-                       schema = @Schema(implementation = Currency.class))
-            @RequestBody Currency updatedCurrency) {
-        try {
-            Optional<Currency> currencyOpt = currencyService.updateCurrency(id, updatedCurrency);
-            return currencyOpt
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.status(404).build());
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(400).body("Некоректні дані для оновлення валюти.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Внутрішня помилка сервера.");
+            @RequestBody CurrencyUpdateDTO currencyUpdateDTO) {
+        Optional<Currency> currencyOpt = currencyService.getCurrencyByName(currencyUpdateDTO.getCurrencyName());
+        if (!currencyOpt.isPresent()) {
+            return ResponseEntity.status(404).body("Валюта не знайдена");
+        }
+    
+        Currency currency = currencyOpt.get();
+    
+        boolean updated = currencyService.updateOrAddRate(currency, currencyUpdateDTO.getDate(), currencyUpdateDTO.getInitialRate());
+        if (updated) {
+            return ResponseEntity.ok("Дані успішно оновлено");
+        } else {
+            return ResponseEntity.status(500).body("Помилка при оновленні даних");
         }
     }
+
 
     @Operation(
             summary = "Видалити валюту за ім'ям",

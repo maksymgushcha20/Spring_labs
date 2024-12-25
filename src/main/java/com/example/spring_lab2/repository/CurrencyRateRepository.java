@@ -1,5 +1,6 @@
 package com.example.spring_lab2.repository;
 
+import com.example.spring_lab2.model.Currency;
 import com.example.spring_lab2.model.CurrencyRate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,6 +20,8 @@ public interface CurrencyRateRepository extends JpaRepository<CurrencyRate, Long
     List<CurrencyRate> findByCurrencyName(@Param("currencyName") String currencyName);
     
     List<CurrencyRate> findByCurrency_CurrencyNameOrderByDateAsc(String currencyName);
+    Optional<CurrencyRate> findByCurrencyAndDate(Currency currency, LocalDate date);
+
     
     @Modifying
     @Transactional

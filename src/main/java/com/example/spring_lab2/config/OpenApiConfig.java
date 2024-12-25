@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import java.util.Arrays;
 
 @Configuration
 public class OpenApiConfig {
@@ -22,32 +23,35 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Currency Management API")
-                        .description("RESTful web service documentation for currency management")
+                        .title("API управління валютою")
+                        .description("Документація RESTful веб-сервісів для управління валютою")
                         .version("v1.0")
                         .license(new License().name("Apache 2.0").url("http://springdoc.org")))
-                .addServersItem(new Server().url("http://localhost:8080").description("Local Server"))
+                .addServersItem(new Server().url("http://localhost:8080").description("Локальний сервер"))
                 .externalDocs(new ExternalDocumentation()
-                        .description("Additional Resources")
+                        .description("Додаткові ресурси")
                         .url("https://swagger.io/"))
-                .addTagsItem(new Tag().name("Currency").description("Operations related to currencies"))
+                .addTagsItem(new Tag().name("Currency").description("Операції, пов'язані з валютами"))
                 .components(new Components()
-                        .addParameters("currencyName", new Parameter()
-                                .name("currencyName")
-                                .description("Name of the currency")
-                                .required(true)
-                                .in("path")
-                                .schema(new Schema<String>().type("string")))
+                        .addSchemas("CurrencyUpdateDTO", new Schema<>()
+                                .type("object")
+                                .addProperty("currencyName", new Schema<String>().type("string").description("Назва валюти"))
+                                .addProperty("date", new Schema<String>().type("string").format("date").description("Дата курсу"))
+                                .addProperty("initialRate", new Schema<Double>().type("number").format("double").description("Початковий курс"))
+                                .required(Arrays.asList("currencyName", "date", "initialRate")))
                         .addResponses("200", new ApiResponse()
-                                .description("Successful operation")
-                                .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema<>().type("object")))))
-                        .addResponses("201", new ApiResponse()
-                                .description("Resource created"))
+                                .description("Успішна операція")
+                                .content(new Content().addMediaType("application/json", 
+                                new MediaType().schema(new Schema<>().type("string").description("Повідомлення про успіх")))))
                         .addResponses("400", new ApiResponse()
-                                .description("Invalid input"))
+                                .description("Некоректні дані"))
                         .addResponses("404", new ApiResponse()
-                                .description("Resource not found"))
+                                .description("Валюта не знайдена"))
                         .addResponses("500", new ApiResponse()
-                                .description("Internal server error")));
+                                .description("Внутрішня помилка сервера")))                
+                    .tags(Arrays.asList(
+                            new Tag().name("Currency").description("Операції, пов'язані з валютами"),
+                            new Tag().name("Admin").description("Адміністративні операції")
+                    ));
     }
 }

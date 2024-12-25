@@ -42,7 +42,7 @@ public class AdminController {
             model.addAttribute("error", e.getMessage());
             return "admin/addInitialCurrency";
         } catch (DataIntegrityViolationException e) {
-            model.addAttribute("error", "A database error occurred: " + e.getRootCause().getMessage());
+            model.addAttribute("error", "A database error occurred: " + (e.getRootCause() != null ? e.getRootCause().getMessage() : "Unknown error"));
             return "admin/addInitialCurrency";
         }
     }
