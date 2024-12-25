@@ -11,8 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,11 +43,12 @@ public class CurrencyService {
         return currencyRepository.save(currency);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<Currency> getCurrencyByName(String currencyName) {
         return currencyRepository.findByCurrencyName(currencyName);
     }
 
+    
     @Transactional
     public List<Currency> getAllCurrencies(int page, int size) {
         return currencyRepository.getCurrencies(page, size);
@@ -84,6 +87,7 @@ public class CurrencyService {
         }
         return false;
     }
+    
 
     @Transactional
     public CurrencyRate addCurrencyRate(Long currencyId, LocalDate date, double exchangeRate) {
@@ -116,17 +120,22 @@ public class CurrencyService {
         currencyRepository.deleteById(currencyId);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<String> getAllCurrencyNames() {
         return currencyRepository.findAll()
                 .stream()
                 .map(Currency::getCurrencyName)
-                .collect(Collectors.toList());
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Transactional
-    public List<CurrencyRate> getRatesByCurrency(String name) {
-        return currencyRateRepository.findByCurrencyName(name);
+    public List<CurrencyRate> getRatesByCurrency(String currencyName) {
+        Optional<Currency> currencyOpt = currencyRepository.findByCurrencyName(currencyName);
+        if (currencyOpt.isPresent()) {
+            return currencyOpt.get().getCurrencyRates();
+        } else {
+            throw new IllegalArgumentException("Currency not found");
+        }
     }
 
     @Transactional
@@ -144,35 +153,28 @@ public class CurrencyService {
         return currencyRateRepository.save(newRecord);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CurrencyRateDTO> getCurrencyRateHistory(String currencyName) {
-        List<CurrencyRate> currencyRates =
-           currencyRateRepository.findByCurrency_CurrencyNameOrderByDateAsc(currencyName);
-    
-        List<CurrencyRateDTO> result = new ArrayList<>();
-        CurrencyRate previousRate = null;
-    
-        for (CurrencyRate current : currencyRates) {
-            double rateChange = 0.0;
-            double percentageChange = 0.0;
-    
-            if (previousRate != null) {
-                rateChange = current.getExchangeRate() - previousRate.getExchangeRate();
-                if (previousRate.getExchangeRate() != 0.0) {
-                    percentageChange = (rateChange / previousRate.getExchangeRate()) * 100;
-                }
-            }
-    
-            result.add(new CurrencyRateDTO(
-                current.getDate(),
-                current.getExchangeRate(),
-                rateChange,
-                percentageChange
-            ));
-    
-            previousRate = current;
-        }
-    
-        return result;
+        List<CurrencyRate> rates = currencyRateRepository.findByCurrency_CurrencyName(currencyName)
+                .stream()
+                .sorted(Comparator.comparing(CurrencyRate::getDate))
+                .collect(Collectors.toList());
+
+        AtomicReference<Double> previousRate = new AtomicReference<>(null);
+
+        return rates.stream()
+                .map(r -> {
+                    Double prevRate = previousRate.get();
+                    double rateChange = (prevRate != null) ? r.getExchangeRate() - prevRate : 0;
+                    double percentageChange = (prevRate != null && prevRate != 0) ? (rateChange / prevRate) * 100 : 0;
+                    previousRate.set(r.getExchangeRate());
+                    return new CurrencyRateDTO(
+                            r.getDate(), 
+                            r.getExchangeRate(), 
+                            rateChange, 
+                            percentageChange
+                    );
+                })
+                .collect(Collectors.toList());
     }
 }

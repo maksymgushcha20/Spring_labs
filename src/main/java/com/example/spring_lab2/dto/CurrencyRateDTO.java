@@ -14,6 +14,7 @@ public class CurrencyRateDTO {
         this.rateChange = rateChange;
         this.percentageChange = percentageChange;
     }
+    
 
     public LocalDate getDate() {
         return date;

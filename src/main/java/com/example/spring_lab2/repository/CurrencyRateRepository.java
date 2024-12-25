@@ -18,7 +18,8 @@ public interface CurrencyRateRepository extends JpaRepository<CurrencyRate, Long
 
     @Query("SELECT cr FROM CurrencyRate cr WHERE cr.currency.currencyName = :currencyName")
     List<CurrencyRate> findByCurrencyName(@Param("currencyName") String currencyName);
-    
+    List<CurrencyRate> findByCurrency_CurrencyName(String currencyName);
+
     List<CurrencyRate> findByCurrency_CurrencyNameOrderByDateAsc(String currencyName);
     Optional<CurrencyRate> findByCurrencyAndDate(Currency currency, LocalDate date);
 

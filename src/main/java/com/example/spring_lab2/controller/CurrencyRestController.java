@@ -1,7 +1,10 @@
 package com.example.spring_lab2.controller;
 
+import com.example.spring_lab2.dto.CurrencyRateDTO;
+import com.example.spring_lab2.dto.CurrencyFullDTO;
 import com.example.spring_lab2.dto.CurrencyUpdateDTO;
 import com.example.spring_lab2.model.Currency;
+import com.example.spring_lab2.model.CurrencyRate;
 import com.example.spring_lab2.service.CurrencyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,8 +17,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/currencies")
@@ -49,23 +55,51 @@ public class CurrencyRestController {
     }
 
     @Operation(
-            summary = "Отримати валюту за ім'ям",
-            description = "Повертає інформацію про валюту на основі її назви."
+        summary = "Отримати валюту за ім'ям",
+        description = "Повертає інформацію про валюту на основі її назви."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Валюта знайдена",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Currency.class))),
-            @ApiResponse(responseCode = "404", description = "Валюта не знайдена",
-                    content = @Content)
+        @ApiResponse(responseCode = "200", description = "Валюта знайдена", 
+            content = @Content(schema = @Schema(implementation = CurrencyFullDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Валюта не знайдена"),
+        @ApiResponse(responseCode = "500", description = "Назва валюти")
     })
-    @GetMapping("/{name}")
-    public ResponseEntity<Currency> getCurrencyByName(
-            @Parameter(description = "Назва валюти", required = true, example = "USD")
-            @PathVariable String name) {
-        return currencyService.getCurrencyByName(name)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+    @GetMapping("/{currencyName}")
+    public ResponseEntity<CurrencyFullDTO> getCurrencyDetails(
+            @Parameter(description = "Name of the currency to retrieve") 
+            @PathVariable("currencyName") String currencyName
+    ) {
+    Optional<Currency> currencyOpt = currencyService.getCurrencyByName(currencyName);
+        if (currencyOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+        }
+        Currency currency = currencyOpt.get();
+        
+        List<CurrencyRate> currencyRates = currencyService.getRatesByCurrency(currencyName)
+                .stream()
+                .sorted(Comparator.comparing(CurrencyRate::getDate))
+                .collect(Collectors.toList());
+        
+        AtomicReference<Double> previousRate = new AtomicReference<>(null);
+        
+        List<CurrencyRateDTO> rates = currencyRates.stream()
+                .map(r -> {
+                        Double prevRate = previousRate.get();
+                        double rateChange = (prevRate != null) ? r.getExchangeRate() - prevRate : 0;
+                        double percentageChange = (prevRate != null && prevRate != 0) ? (rateChange / prevRate) * 100 : 0;
+                        previousRate.set(r.getExchangeRate());
+                        return new CurrencyRateDTO(r.getDate(), r.getExchangeRate(), rateChange, percentageChange);
+                })
+                .collect(Collectors.toList());
+        
+        CurrencyFullDTO dto = new CurrencyFullDTO(
+                currency.getId(),
+                currency.getCurrencyName(),
+                currency.getCreateDate(),
+                rates
+        );
+        return ResponseEntity.ok(dto);
+        }
 
     @Operation(
             summary = "Створити нову валюту",
