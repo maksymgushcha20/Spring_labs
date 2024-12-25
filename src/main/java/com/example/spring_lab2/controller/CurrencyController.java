@@ -1,11 +1,12 @@
 package com.example.spring_lab2.controller;
 
-import com.example.spring_lab2.model.CurrencyRate;
+import com.example.spring_lab2.dto.CurrencyRateDTO;
 import com.example.spring_lab2.service.CurrencyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class CurrencyController {
                                      @RequestParam(required = false) String startDate,
                                      @RequestParam(required = false) String endDate,
                                      Model model) {
-        List<CurrencyRate> rates = currencyService.getRatesByCurrency(name);
+        List<CurrencyRateDTO> rates = currencyService.getCurrencyRateHistory(name);
 
         LocalDate start = (startDate != null && !startDate.isEmpty()) ? LocalDate.parse(startDate) : null;
         LocalDate end = (endDate != null && !endDate.isEmpty()) ? LocalDate.parse(endDate) : null;

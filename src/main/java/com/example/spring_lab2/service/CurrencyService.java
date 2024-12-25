@@ -1,5 +1,6 @@
 package com.example.spring_lab2.service;
 
+import com.example.spring_lab2.dto.CurrencyRateDTO;
 import com.example.spring_lab2.model.Currency;
 import com.example.spring_lab2.model.CurrencyRate;
 import com.example.spring_lab2.repository.CurrencyRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -71,9 +73,9 @@ public class CurrencyService {
     @Transactional
     public CurrencyRate addCurrencyRate(Long currencyId, LocalDate date, double exchangeRate) {
         Currency currency = currencyRepository.findById(currencyId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid currency ID"));
-        CurrencyRate rate = new CurrencyRate(currency, date, exchangeRate);
-        return currencyRateRepository.save(rate);
+            .orElseThrow(() -> new IllegalArgumentException("Currency not found"));
+        CurrencyRate currencyRate = new CurrencyRate(currency, date, exchangeRate);
+        return currencyRateRepository.save(currencyRate);
     }
 
     @Transactional
@@ -120,5 +122,37 @@ public class CurrencyService {
         CurrencyRate newRecord = new CurrencyRate(currency, date, newExchangeRate);
         // Handle rateChange if necessary (e.g., logging)
         return currencyRateRepository.save(newRecord);
+    }
+
+    @Transactional
+    public List<CurrencyRateDTO> getCurrencyRateHistory(String currencyName) {
+        List<CurrencyRate> currencyRates =
+           currencyRateRepository.findByCurrency_CurrencyNameOrderByDateAsc(currencyName);
+    
+        List<CurrencyRateDTO> result = new ArrayList<>();
+        CurrencyRate previousRate = null;
+    
+        for (CurrencyRate current : currencyRates) {
+            double rateChange = 0.0;
+            double percentageChange = 0.0;
+    
+            if (previousRate != null) {
+                rateChange = current.getExchangeRate() - previousRate.getExchangeRate();
+                if (previousRate.getExchangeRate() != 0.0) {
+                    percentageChange = (rateChange / previousRate.getExchangeRate()) * 100;
+                }
+            }
+    
+            result.add(new CurrencyRateDTO(
+                current.getDate(),
+                current.getExchangeRate(),
+                rateChange,
+                percentageChange
+            ));
+    
+            previousRate = current;
+        }
+    
+        return result;
     }
 }

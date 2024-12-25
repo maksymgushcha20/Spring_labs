@@ -1,6 +1,7 @@
 package com.example.spring_lab2.controller;
 
 import com.example.spring_lab2.service.CurrencyService;
+import com.example.spring_lab2.dto.CurrencyRateDTO;
 import com.example.spring_lab2.model.Currency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
-
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -104,6 +105,22 @@ public class AdminController {
         } catch (Exception e) {
             model.addAttribute("error", "Error deleting currency: " + e.getMessage());
             return "admin/deleteCurrency";
+        }
+    }
+
+    @GetMapping("/currencyDetails")
+    public String showCurrencyDetails(@RequestParam String currencyName, Model model) {
+        try {
+            List<CurrencyRateDTO> rateHistory = currencyService.getCurrencyRateHistory(currencyName);
+            model.addAttribute("currencyName", currencyName);
+            model.addAttribute("rates", rateHistory); // Ensure DTOs are passed
+            return "currencyDetails";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return "error";
+        } catch (Exception e) {
+            model.addAttribute("error", "An unexpected error occurred");
+            return "error";
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.example.spring_lab2.controller;
 
-import com.example.spring_lab2.model.CurrencyRate;
+import com.example.spring_lab2.model.Currency;
 import com.example.spring_lab2.service.CurrencyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -29,10 +28,10 @@ public class CurrencyRestController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успішна відповідь",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = CurrencyRate.class)))
+                            schema = @Schema(implementation = Currency.class)))
     })
     @GetMapping
-    public ResponseEntity<List<CurrencyRate>> getAllCurrencies(
+    public ResponseEntity<List<Currency>> getAllCurrencies(
             @Parameter(description = "Номер сторінки (починається з 0)", example = "0")
             @RequestParam Optional<Integer> page,
             @Parameter(description = "Кількість записів на сторінці", example = "10")
@@ -46,11 +45,11 @@ public class CurrencyRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Валюта знайдена",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CurrencyRate.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Currency.class))),
             @ApiResponse(responseCode = "404", description = "Валюта не знайдена")
     })
     @GetMapping("/{name}")
-    public ResponseEntity<CurrencyRate> getCurrencyByName(
+    public ResponseEntity<Currency> getCurrencyByName(
             @Parameter(description = "Назва валюти для пошуку", required = true)
             @PathVariable String name) {
         return currencyService.getCurrencyByName(name)
@@ -64,14 +63,15 @@ public class CurrencyRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Валюта успішно створена",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CurrencyRate.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Currency.class))),
             @ApiResponse(responseCode = "400", description = "Некоректні дані для створення валюти")
     })
     @PostMapping
-    public ResponseEntity<CurrencyRate> addCurrency(
+    public ResponseEntity<Currency> addCurrency(
             @Parameter(description = "Дані нової валюти", required = true)
-            @RequestBody CurrencyRate currencyRate) {
-        return ResponseEntity.status(201).body(currencyService.addCurrency(currencyRate));
+            @RequestBody Currency currency) {
+        Currency createdCurrency = currencyService.addCurrency(currency.getCurrencyName(), currency.getCreateDate());
+        return ResponseEntity.status(201).body(createdCurrency);
     }
 
     @Operation(
@@ -80,20 +80,19 @@ public class CurrencyRestController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Валюта успішно оновлена",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CurrencyRate.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Currency.class))),
             @ApiResponse(responseCode = "404", description = "Валюта не знайдена")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<CurrencyRate> updateCurrency(
+    public ResponseEntity<Currency> updateCurrency(
             @Parameter(description = "ID валюти, яку потрібно оновити", required = true)
-            @PathVariable String id,
+            @PathVariable Long id,
             @Parameter(description = "Оновлені дані валюти", required = true)
-            @RequestBody CurrencyRate updatedRate) {
-        return currencyService.updateCurrency(id, updatedRate)
-                .map(ResponseEntity::ok)
+            @RequestBody Currency updatedCurrency) {
+        Optional<Currency> currencyOpt = currencyService.updateCurrency(id, updatedCurrency);
+        return currencyOpt.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
     @Operation(
             summary = "Видалити валюту за ім'ям",
@@ -107,10 +106,12 @@ public class CurrencyRestController {
     public ResponseEntity<Void> deleteCurrency(
             @Parameter(description = "Назва валюти для видалення", required = true)
             @PathVariable String name) {
-        if (currencyService.deleteCurrencyByName(name)) {
+        boolean deleted = currencyService.deleteCurrencyByName(name);
+        if (deleted) {
             return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
 }
