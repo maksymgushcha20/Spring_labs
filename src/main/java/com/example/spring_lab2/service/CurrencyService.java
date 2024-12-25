@@ -103,6 +103,7 @@ public class CurrencyService {
     }
 
     @Transactional
+
     public void updateCurrencyName(Long currencyId, String newName) {
         // Check if new currency name already exists
         if (currencyRepository.findByCurrencyName(newName).isPresent()) {
@@ -114,6 +115,7 @@ public class CurrencyService {
             currencyRepository.save(currency);
         });
     }
+
 
     @Transactional
     public void deleteCurrencyById(Long currencyId) {

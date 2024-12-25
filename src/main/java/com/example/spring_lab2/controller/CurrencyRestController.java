@@ -141,6 +141,7 @@ public class CurrencyRestController {
         @ApiResponse(responseCode = "400", description = "Некоректні дані запиту"),
         @ApiResponse(responseCode = "404", description = "Валюта не знайдена")
     })
+
     public ResponseEntity<?> updateCurrency(
             @RequestBody CurrencyUpdateDTO currencyUpdateDTO) {
         Optional<Currency> currencyOpt = currencyService.getCurrencyByName(currencyUpdateDTO.getCurrencyName());
