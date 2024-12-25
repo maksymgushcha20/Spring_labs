@@ -3,6 +3,8 @@ package com.example.spring_lab2.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "currency_rates")
 public class CurrencyRate {
@@ -10,7 +12,8 @@ public class CurrencyRate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency_id", nullable = false)
     private Currency currency;

@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,9 +31,9 @@ public class AdminController {
 
     @PostMapping("/addInitial")
     public String addInitialCurrency(@RequestParam String currencyName,
-                                    @RequestParam String date, 
-                                    @RequestParam double initialRate,
-                                    Model model) {
+                                     @RequestParam String date,
+                                     @RequestParam double initialRate,
+                                     Model model) {
         try {
             Currency savedCurrency = currencyService.addCurrency(currencyName, LocalDate.now());
             currencyService.addCurrencyRate(savedCurrency.getId(), LocalDate.parse(date), initialRate);
@@ -46,17 +47,15 @@ public class AdminController {
         }
     }
 
-
     @GetMapping("/addChange")
     public String showAddChangeForm() {
         return "admin/addCurrencyChange";
     }
 
-    // Long currencyId, LocalDate date, double exchangeRate
     @PostMapping("/addChange")
     public String addChange(@RequestParam String currencyName,
                             @RequestParam LocalDate date,
-                            @RequestParam double exchangeRate, 
+                            @RequestParam double exchangeRate,
                             Model model) {
         try {
             Long currencyId = currencyService.getCurrencyIdByName(currencyName);

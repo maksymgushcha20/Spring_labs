@@ -32,11 +32,13 @@ public class CurrencyRestController {
     })
     @GetMapping
     public ResponseEntity<List<Currency>> getAllCurrencies(
-            @Parameter(description = "Номер сторінки (починається з 0)", example = "0")
             @RequestParam Optional<Integer> page,
-            @Parameter(description = "Кількість записів на сторінці", example = "10")
             @RequestParam Optional<Integer> size) {
-        return ResponseEntity.ok(currencyService.getAllCurrencies(page.orElse(0), size.orElse(10)));
+        List<Currency> currencies = currencyService.getAllCurrencies(
+                page.orElse(0), 
+                size.orElse(10)
+        );
+        return ResponseEntity.ok(currencies);
     }
 
     @Operation(
@@ -49,9 +51,7 @@ public class CurrencyRestController {
             @ApiResponse(responseCode = "404", description = "Валюта не знайдена")
     })
     @GetMapping("/{name}")
-    public ResponseEntity<Currency> getCurrencyByName(
-            @Parameter(description = "Назва валюти для пошуку", required = true)
-            @PathVariable String name) {
+    public ResponseEntity<Currency> getCurrencyByName(@PathVariable String name) {
         return currencyService.getCurrencyByName(name)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "currencies")
 public class Currency {
@@ -19,6 +21,7 @@ public class Currency {
     @Column(name = "create_date", nullable = false)
     private LocalDate createDate;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "currency", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<CurrencyRate> currencyRates = new ArrayList<>();
 
