@@ -1,6 +1,5 @@
 package com.example.spring_lab2.config;
 
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -37,15 +36,17 @@ public class OpenApiConfig {
                                 .name("currencyName")
                                 .description("Name of the currency")
                                 .required(true)
-                                .in(String.valueOf(ParameterIn.QUERY))
-                                .schema(new Schema().type("string")))
+                                .in("path")
+                                .schema(new Schema<String>().type("string")))
                         .addResponses("200", new ApiResponse()
                                 .description("Successful operation")
-                                .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema().type("object")))))
+                                .content(new Content().addMediaType("application/json", new MediaType().schema(new Schema<>().type("object")))))
+                        .addResponses("201", new ApiResponse()
+                                .description("Resource created"))
                         .addResponses("400", new ApiResponse()
                                 .description("Invalid input"))
                         .addResponses("404", new ApiResponse()
-                                .description("Currency not found"))
+                                .description("Resource not found"))
                         .addResponses("500", new ApiResponse()
                                 .description("Internal server error")));
     }

@@ -1,11 +1,11 @@
 package com.example.spring_lab2.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "currencies")
@@ -23,6 +23,7 @@ public class Currency {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "currency", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @JsonIgnore
     private List<CurrencyRate> currencyRates = new ArrayList<>();
 
     public Currency() {
@@ -32,8 +33,6 @@ public class Currency {
         this.currencyName = currencyName;
         this.createDate = createDate;
     }
-
-    // Getters and Setters
 
     public Long getId() {
         return id;
