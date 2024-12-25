@@ -66,23 +66,59 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        .alert-container {
+            max-width: 400px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            position: relative;
+            animation: fadeOut 5s forwards;
+        }
+
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
     </style>
 </head>
 <body>
-<h1>Add Initial Currency</h1>
-<form th:action="@{/admin/addInitial}" method="post">
-    <label for="currencyName">Currency Name:</label>
-    <input type="text" id="currencyName" name="currencyName" placeholder="Enter currency name (e.g., USD)" required/>
+    <h1>Add Initial Currency</h1>
 
-    <label for="date">Initial Date:</label>
-    <input type="date" id="date" name="date" required/>
+    <div class="alert-container">
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    </div>
 
-    <label for="initialRate">Initial Rate:</label>
-    <input type="number" id="initialRate" step="0.01" name="initialRate" placeholder="Enter initial exchange rate" required/>
+    <form th:action="@{/admin/addInitial}" method="post">
+        <label for="currencyName">Currency Name:</label>
+        <input type="text" id="currencyName" name="currencyName" placeholder="Enter currency name (e.g., USD)" 
+               th:value="${currencyName}" required/>
 
-    <button type="submit">Add Initial Currency</button>
-</form>
+        <label for="date">Initial Date:</label>
+        <input type="date" id="date" name="date" 
+               th:value="${date}" required/>
 
-<a th:href="@{/admin}" class="back-link">Back to Admin Panel</a>
+        <label for="initialRate">Initial Rate:</label>
+        <input type="number" id="initialRate" step="0.01" name="initialRate" 
+               th:value="${initialRate}" placeholder="Enter initial exchange rate" required/>
+
+        <button type="submit">Add Initial Currency</button>
+    </form>
+
+    <a th:href="@{/admin}" class="back-link">Back to Admin Panel</a>
+
 </body>
 </html>

@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title th:text="'Exchange Rates for ' + ${currencyName}"></title>
+  <title th:text="'Currency Details for ' + ${currencyName}"></title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f9;
       padding: 20px;
     }
-
     h1 {
       text-align: center;
       color: #333;
     }
-
     table {
       width: 80%;
       margin: 20px auto;
@@ -21,32 +19,26 @@
       background-color: #fff;
       box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
     }
-
     th, td {
       padding: 12px;
       border: 1px solid #ddd;
       text-align: center;
     }
-
     th {
       background-color: #007BFF;
       color: white;
     }
-
     tr:nth-child(even) {
       background-color: #f9f9f9;
     }
-
     .positive {
       color: green;
       font-weight: bold;
     }
-
     .negative {
       color: red;
       font-weight: bold;
     }
-
     a {
       display: block;
       width: 200px;
@@ -58,41 +50,37 @@
       text-decoration: none;
       border-radius: 5px;
     }
-
     a:hover {
       background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-<h1 th:text="'Exchange Rates for ' + ${currencyName}"></h1>
+<h1 th:text="'Currency Details for ' + ${currencyName}"></h1>
 
-<table>
-  <tr>
-    <th>Date</th>
-    <th>Previous Rate</th>
-    <th>Rate Change</th>
-    <th>Current Rate</th>
-    <th>Status</th>
-  </tr>
-  <tr th:each="rate : ${rates}">
-    <td th:text="${rate.date}"></td>
-    <td th:text="${#numbers.formatDecimal(rate.previousRate, 0, 2)}"></td>
-    <td th:text="${rate.rateChange}"></td>
-    <td th:text="${#numbers.formatDecimal(rate.exchangeRate, 0, 2)}"></td>
+<div th:if="${#lists.isEmpty(rates)}">
+  <p>No rates available for this currency.</p>
+</div>
 
-    <!-- Умовне форматування для статусу -->
-    <td th:switch="${rate.rateChange}">
-      <span th:case="0" th:text="'No Change'"></span>
-      <span th:case="*">
-                <span th:if="${rate.rateChange > 0}" class="positive" th:text="'Increase'"></span>
-                <span th:unless="${rate.rateChange > 0}" class="negative" th:text="'Decrease'"></span>
-            </span>
-    </td>
-  </tr>
+<table th:if="${!#lists.isEmpty(rates)}">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Exchange Rate</th>
+      <th>Rate Change</th>
+      <th>Percentage Change</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="rate : ${rates}">
+      <td th:text="${#temporals.format(rate.date, 'yyyy-MM-dd')}"></td>
+      <td th:text="${#numbers.formatDecimal(rate.exchangeRate, 1, 4)}"></td>
+                <td th:text="${rate.rateChange != null ? #numbers.formatDecimal(rate.rateChange, 1, 4) : 'N/A'}"></td>
+                <td th:text="${rate.percentageChange != null ? #numbers.formatDecimal(rate.percentageChange, 1, 2) + '%' : 'N/A'}"></td>
+    </tr>
+  </tbody>
 </table>
 
-
-<a th:href="@{/}">Back to Home</a>
+<a th:href="@{/admin}">Back to Admin Panel</a>
 </body>
 </html>
