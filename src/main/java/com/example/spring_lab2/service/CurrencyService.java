@@ -1,109 +1,124 @@
 package com.example.spring_lab2.service;
 
+import com.example.spring_lab2.model.Currency;
 import com.example.spring_lab2.model.CurrencyRate;
 import com.example.spring_lab2.repository.CurrencyRepository;
+import com.example.spring_lab2.repository.CurrencyRateRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
 import java.util.stream.Collectors;
+
 @Service
 public class CurrencyService {
 
-    private final CurrencyRepository repository;
+    @Autowired
+    private CurrencyRepository currencyRepository;
 
-    public CurrencyService(CurrencyRepository repository) {
-        this.repository = repository;
-    }
-
-    public List<CurrencyRate> getAllCurrencyRates() {
-        return repository.findAll();
-    }
-
-    public List<CurrencyRate> getRatesByCurrency(String currencyName) {
-        return repository.findByCurrencyName(currencyName);
-    }
-
-    public void addRateChange(String currencyName, LocalDate date, double rateChange) {
-        List<CurrencyRate> rates = repository.findByCurrencyName(currencyName);
-        if (rates.isEmpty()) {
-            return;
-        }
-
-        CurrencyRate lastBefore = rates.stream()
-                .filter(r -> !r.getDate().isAfter(date))
-                .max((r1, r2) -> r1.getDate().compareTo(r2.getDate()))
-                .orElse(null);
-
-        if (lastBefore == null) {
-            return;
-        }
-
-        double newExchangeRate = lastBefore.getExchangeRate() + rateChange;
-        CurrencyRate newRecord = new CurrencyRate(currencyName, date, newExchangeRate, lastBefore.getExchangeRate(), rateChange);
-        repository.save(newRecord);
-    }
-
-    public void updateCurrencyName(String oldName, String newName) {
-        repository.updateCurrencyName(oldName, newName);
+    @Autowired
+    private CurrencyRateRepository currencyRateRepository; 
+    
+    @Transactional
+    public Long getCurrencyIdByName(String currencyName) {    
+        Currency currency = currencyRepository.findByCurrencyName(currencyName)
+            .orElseThrow(() -> new IllegalArgumentException("Currency not found"));    
+        return currency.getId();    
     }
 
     @Transactional
-    public void addInitialCurrency(String currencyName, LocalDate date, double initialRate) {
-        CurrencyRate initialRecord = new CurrencyRate(currencyName, date, initialRate, initialRate, 0.0);
-        repository.save(initialRecord);
+    public Currency addCurrency(String currencyName, LocalDate createDate) {
+        // Check if currency already exists
+        if (currencyRepository.findByCurrencyName(currencyName).isPresent()) {
+            throw new IllegalArgumentException("Currency with name '" + currencyName + "' already exists.");
+        }
+        Currency currency = new Currency(currencyName, createDate);
+        return currencyRepository.save(currency);
     }
 
+    @Transactional
+    public Optional<Currency> getCurrencyByName(String currencyName) {
+        return currencyRepository.findByCurrencyName(currencyName);
+    }
+
+    @Transactional
+    public List<Currency> getAllCurrencies(int page, int size) {
+        return currencyRepository.getCurrencies(page, size);
+    }
+
+    @Transactional
+    public Optional<Currency> updateCurrency(Long id, Currency updatedCurrency) {
+        return currencyRepository.findById(id).map(currency -> {
+            currency.setCurrencyName(updatedCurrency.getCurrencyName());
+            currency.setCreateDate(updatedCurrency.getCreateDate());
+            return currencyRepository.save(currency);
+        });
+    }
 
     @Transactional
     public boolean deleteCurrencyByName(String name) {
-        List<CurrencyRate> deletedCurrency = repository.findByCurrencyName(name);
-        repository.deleteByCurrencyName(name);
-        return !deletedCurrency.isEmpty();
+        Optional<Currency> currencyOpt = currencyRepository.findByCurrencyName(name);
+        if (currencyOpt.isPresent()) {
+            currencyRepository.delete(currencyOpt.get());
+            return true;
+        }
+        return false;
     }
-
-
 
     @Transactional
-    public Optional<CurrencyRate> updateCurrency(String id, CurrencyRate updatedRate) {
-        List<CurrencyRate> currencyRates = repository.findByCurrencyName(id);
-        if (currencyRates.isEmpty()) {
-            return Optional.empty();
-        }
-
-        CurrencyRate existingRate = currencyRates.get(0);
-        existingRate.setCurrencyName(updatedRate.getCurrencyName());
-        existingRate.setDate(updatedRate.getDate());
-        existingRate.setExchangeRate(updatedRate.getExchangeRate());
-        existingRate.setPreviousRate(updatedRate.getPreviousRate());
-        existingRate.setRateChange(updatedRate.getRateChange());
-
-        return Optional.of(repository.save(existingRate));
+    public CurrencyRate addCurrencyRate(Long currencyId, LocalDate date, double exchangeRate) {
+        Currency currency = currencyRepository.findById(currencyId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid currency ID"));
+        CurrencyRate rate = new CurrencyRate(currency, date, exchangeRate);
+        return currencyRateRepository.save(rate);
     }
 
+    @Transactional
+    public void updateCurrencyName(Long currencyId, String newName) {
+        // Check if new currency name already exists
+        if (currencyRepository.findByCurrencyName(newName).isPresent()) {
+            throw new IllegalArgumentException("Currency with name '" + newName + "' already exists.");
+        }
+
+        currencyRepository.findById(currencyId).ifPresent(currency -> {
+            currency.setCurrencyName(newName);
+            currencyRepository.save(currency);
+        });
+    }
+
+    @Transactional
+    public void deleteCurrencyById(Long currencyId) {
+        currencyRepository.deleteById(currencyId);
+    }
 
     @Transactional
     public List<String> getAllCurrencyNames() {
-        return repository.findAll().stream()
-                .map(CurrencyRate::getCurrencyName)
-                .distinct()
+        return currencyRepository.findAll()
+                .stream()
+                .map(Currency::getCurrencyName)
                 .collect(Collectors.toList());
     }
+
     @Transactional
-    public List<CurrencyRate> getAllCurrencies(int page, int size) {
-        return repository.getCurrencies(page, size);
+    public List<CurrencyRate> getRatesByCurrency(String name) {
+        return currencyRateRepository.findByCurrencyName(name);
     }
+
     @Transactional
-    public Optional<CurrencyRate> getCurrencyByName(String name) {
-        List<CurrencyRate> currencies = repository.findByCurrencyName(name);
-        return currencies.isEmpty() ? Optional.empty() : Optional.of(currencies.get(0));
-    }
-    @Transactional
-    public CurrencyRate addCurrency(CurrencyRate currencyRate) {
-        repository.save(currencyRate);
-        return currencyRate;
+    public CurrencyRate createNewCurrencyRate(Long currencyId, LocalDate date, double newExchangeRate) {
+        // Fetch the last CurrencyRate before the given date
+        Optional<CurrencyRate> lastBeforeOpt = currencyRateRepository.findTopByCurrencyIdAndDateBeforeOrderByDateDesc(currencyId, date);
+        double previousRate = lastBeforeOpt.map(CurrencyRate::getExchangeRate).orElse(0.0);
+        double rateChange = newExchangeRate - previousRate;
+
+        Currency currency = currencyRepository.findById(currencyId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid currency ID"));
+
+        CurrencyRate newRecord = new CurrencyRate(currency, date, newExchangeRate);
+        // Handle rateChange if necessary (e.g., logging)
+        return currencyRateRepository.save(newRecord);
     }
 }
-
